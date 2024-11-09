@@ -14,15 +14,9 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
-const SECRET_TEMPLATE = `
-apiVersion: v1
-kind: Secret
-metadata:
- name: testing
-data:
- secret: value`
-
 type GopassSecret struct{}
+
+const gopassPrefix = "gopass:"
 
 func gopass(item *yaml.RNode) error {
 	fields := map[string]bool{
@@ -33,17 +27,17 @@ func gopass(item *yaml.RNode) error {
 	for field, b64encode := range fields {
 		data := item.Field(field)
 		if data == nil {
-			return nil // Skip if no metadata field
+			continue
 		}
 
-		// Assuming you have an RNode that's a map
-		// TODO: what happens if it is not?
+		// field should be a `MapNode`. if not, it's not a valid Secret and
+		// we will fail with `wrong node kind`
 		err := data.Value.VisitFields(func(node *yaml.MapNode) error {
 			key := node.Key.YNode().Value
 			value := node.Value.YNode().Value
 
-			if strings.HasPrefix(value, "gopass:") {
-				newValue, err := rungopass(strings.TrimPrefix(value, "gopass:"))
+			if strings.HasPrefix(value, gopassPrefix) {
+				newValue, err := rungopass(strings.TrimPrefix(value, gopassPrefix))
 				if err != nil {
 					return fmt.Errorf("getting gopass secret from %s for %s: %w", value, key, err)
 				}
