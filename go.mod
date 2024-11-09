@@ -2,7 +2,10 @@ module jossware.com/kustomize-gopass
 
 go 1.23
 
-require sigs.k8s.io/kustomize/kyaml v0.18.1
+require (
+	github.com/stretchr/testify v1.9.0
+	sigs.k8s.io/kustomize/kyaml v0.18.1
+)
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a // indirect
@@ -16,6 +19,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect

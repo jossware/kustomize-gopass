@@ -13,25 +13,27 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
-type GopassSecret struct{}
+type GopassSecret struct {
+	rungopassFunc func(string) (string, error)
+}
 
 const gopassPrefix = "gopass:"
 
 func main() {
-	process(&kio.ByteReadWriter{})
+	process(&kio.ByteReadWriter{}, &GopassSecret{
+		rungopassFunc: rungopass,
+	})
 }
 
-func process(byteReadWriter *kio.ByteReadWriter) {
-	config := new(GopassSecret)
-
-	//function that will be passed to the kustomize framework execute function
+func process(byteReadWriter *kio.ByteReadWriter, config *GopassSecret) {
+	// function that will be passed to the kustomize framework execute function
 	fn := func(items []*yaml.RNode) ([]*yaml.RNode, error) {
 		for _, item := range items {
 			if item.GetKind() == "Secret" && item.GetApiVersion() == "v1" {
 				if err := clearAnnotations(item); err != nil {
 					return items, fmt.Errorf("clearing annotations: %w", err)
 				}
-				if err := gopass(item); err != nil {
+				if err := config.gopass(item); err != nil {
 					return items, fmt.Errorf("transforming gopass keys: %w", err)
 				}
 			}
@@ -48,7 +50,7 @@ func process(byteReadWriter *kio.ByteReadWriter) {
 	}
 }
 
-func gopass(item *yaml.RNode) error {
+func (gs *GopassSecret) gopass(item *yaml.RNode) error {
 	fields := map[string]bool{
 		"data":       true,
 		"stringData": false,
@@ -67,7 +69,7 @@ func gopass(item *yaml.RNode) error {
 			value := node.Value.YNode().Value
 
 			if strings.HasPrefix(value, gopassPrefix) {
-				newValue, err := rungopass(strings.TrimPrefix(value, gopassPrefix))
+				newValue, err := gs.rungopassFunc(strings.TrimPrefix(value, gopassPrefix))
 				if err != nil {
 					return fmt.Errorf("getting gopass secret from %s for %s: %w", value, key, err)
 				}
