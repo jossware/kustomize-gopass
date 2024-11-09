@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
@@ -23,32 +24,42 @@ data:
 
 type GopassSecret struct{}
 
-var annosToClear = []string{"config.kubernetes.io/local-config", "config.kubernetes.io/function"}
-
 func gopass(item *yaml.RNode) error {
-	// TODO: stringData
-	data := item.Field("data")
-	if data == nil {
-		return nil // Skip if no metadata field
+	fields := map[string]bool{
+		"data":       true,
+		"stringData": false,
 	}
 
-	// Assuming you have an RNode that's a map
-	// TODO: what happens if it is not?
-	err := data.Value.VisitFields(func(node *yaml.MapNode) error {
-		key := node.Key.YNode().Value
-		value := node.Value.YNode().Value
-
-		if strings.HasPrefix(value, "gopass:") {
-			newValue, err := rungopass(strings.TrimPrefix(value, "gopass:"))
-			if err != nil {
-				return fmt.Errorf("getting gopass secret from %s for %s: %w", value, key, err)
-			}
-			node.Value.YNode().Value = newValue
+	for field, b64encode := range fields {
+		data := item.Field(field)
+		if data == nil {
+			return nil // Skip if no metadata field
 		}
-		return nil
-	})
 
-	return err
+		// Assuming you have an RNode that's a map
+		// TODO: what happens if it is not?
+		err := data.Value.VisitFields(func(node *yaml.MapNode) error {
+			key := node.Key.YNode().Value
+			value := node.Value.YNode().Value
+
+			if strings.HasPrefix(value, "gopass:") {
+				newValue, err := rungopass(strings.TrimPrefix(value, "gopass:"))
+				if err != nil {
+					return fmt.Errorf("getting gopass secret from %s for %s: %w", value, key, err)
+				}
+				if b64encode {
+					newValue = base64.StdEncoding.EncodeToString([]byte(newValue))
+				}
+				node.Value.YNode().Value = newValue
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func rungopass(path string) (string, error) {
@@ -61,6 +72,8 @@ func rungopass(path string) (string, error) {
 }
 
 func clearAnnotations(item *yaml.RNode) error {
+	annosToClear := []string{"config.kubernetes.io/local-config", "config.kubernetes.io/function"}
+
 	// Get the metadata field
 	metadata := item.Field("metadata")
 	if metadata == nil {
