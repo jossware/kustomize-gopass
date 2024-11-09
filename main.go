@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"sigs.k8s.io/kustomize/kyaml/fn/framework"
-	"sigs.k8s.io/kustomize/kyaml/fn/framework/command"
 	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
@@ -17,6 +16,37 @@ import (
 type GopassSecret struct{}
 
 const gopassPrefix = "gopass:"
+
+func main() {
+	process(&kio.ByteReadWriter{})
+}
+
+func process(byteReadWriter *kio.ByteReadWriter) {
+	config := new(GopassSecret)
+
+	//function that will be passed to the kustomize framework execute function
+	fn := func(items []*yaml.RNode) ([]*yaml.RNode, error) {
+		for _, item := range items {
+			if item.GetKind() == "Secret" && item.GetApiVersion() == "v1" {
+				if err := clearAnnotations(item); err != nil {
+					return items, fmt.Errorf("clearing annotations: %w", err)
+				}
+				if err := gopass(item); err != nil {
+					return items, fmt.Errorf("transforming gopass keys: %w", err)
+				}
+			}
+		}
+
+		return items, nil
+	}
+
+	p := framework.SimpleProcessor{Config: config, Filter: kio.FilterFunc(fn)}
+
+	if err := framework.Execute(p, byteReadWriter); err != nil {
+		log.Printf("error running gopass secret function: %v", err)
+		os.Exit(1)
+	}
+}
 
 func gopass(item *yaml.RNode) error {
 	fields := map[string]bool{
@@ -94,51 +124,4 @@ func clearAnnotations(item *yaml.RNode) error {
 	}
 
 	return nil
-}
-
-func process(byteReadWriter *kio.ByteReadWriter, runAsCommand bool) {
-	config := new(GopassSecret)
-	log.Printf("Processing secret data, config: %+v", config)
-
-	//function that will be passed to the kustomize framework execute function
-	fn := func(items []*yaml.RNode) ([]*yaml.RNode, error) {
-		for _, item := range items {
-			log.Printf("Processing item: %s", item.GetKind())
-			if item.GetKind() == "Secret" && item.GetApiVersion() == "v1" {
-				if err := clearAnnotations(item); err != nil {
-					return items, fmt.Errorf("clearing annotations: %w", err)
-				}
-				if err := gopass(item); err != nil {
-					return items, fmt.Errorf("transforming gopass keys: %w", err)
-				}
-			}
-		}
-
-		return items, nil
-	}
-
-	p := framework.SimpleProcessor{Config: config, Filter: kio.FilterFunc(fn)}
-
-	if !runAsCommand {
-		if err := framework.Execute(p, byteReadWriter); err != nil {
-			log.Printf("error running gopass secret function: %v", err)
-			os.Exit(1)
-		}
-	}
-
-	if runAsCommand {
-		cmd := command.Build(p, command.StandaloneDisabled, false)
-		//automatically generates the Dockerfile for us
-		command.AddGenerateDockerfile(cmd)
-		if err := cmd.Execute(); err != nil {
-			log.Printf("error running gopass secret function: %v", err)
-			os.Exit(1)
-		}
-	}
-}
-
-func main() {
-	runAsCommand := false
-	byteReadWriter := &kio.ByteReadWriter{}
-	process(byteReadWriter, runAsCommand)
 }
