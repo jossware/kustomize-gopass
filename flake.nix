@@ -53,9 +53,9 @@
             # it should be "out-of-band" with other tooling (eg. gomod2nix).
             # To begin with it is recommended to set this, but one must
             # remember to bump this hash when your dependencies change.
-            vendorHash = pkgs.lib.fakeHash;
+            # vendorHash = pkgs.lib.fakeHash;
 
-            # vendorHash = "sha256-pQpattmS9VmO3ZIQUFn66az8GSmB4IvYhTTCFn6SUmo=";
+            vendorHash = "sha256-Vv42dLN0iKJUEL1o0ZxCHq741xufXHiakw97eVbkcxo=";
           };
         }
       );
