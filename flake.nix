@@ -7,13 +7,6 @@
   outputs =
     { self, nixpkgs }:
     let
-
-      # to work with older version of flakes
-      lastModifiedDate = self.lastModifiedDate or self.lastModified or "19700101";
-
-      # Generate a user-friendly version number.
-      version = builtins.substring 0 8 lastModifiedDate;
-
       # System types to support.
       supportedSystems = [
         "x86_64-linux"
@@ -39,8 +32,9 @@
         in
         {
           kustomize-gopass = pkgs.buildGoModule {
+            name = "kustomize-gopass";
             pname = "kustomize-gopass";
-            inherit version;
+
             # In 'nix develop', we don't need a copy of the source tree
             # in the Nix store.
             src = ./.;
