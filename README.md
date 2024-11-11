@@ -1,3 +1,5 @@
+![release](https://github.com/jossware/kustomize-gopass/actions/workflows/release.yml/badge.svg)
+
 # kustomize-gopass
 
 kustomize-gopass is an [exec-based KRM function](https://kubectl.docs.kubernetes.io/guides/extending_kustomize/exec_krm_functions/) [Kustomize plugin](https://kubectl.docs.kubernetes.io/guides/extending_kustomize/) that injects secrets from [gopass](https://www.gopass.pw/) into Kubernetes `Secret` resources. This allows you to work with Kubernetes Secret resources in your Kustomize base without directly including the sensitive secret values in your manifests.
