@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -13,6 +14,8 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
+var Version = "unknown"
+
 type GopassSecret struct {
 	rungopassFunc func(string) (string, error)
 }
@@ -20,6 +23,12 @@ type GopassSecret struct {
 const gopassPrefix = "gopass:"
 
 func main() {
+	ver := flag.Bool("version", false, "print version information")
+	flag.Parse()
+	if *ver {
+		fmt.Printf("%s\n", Version)
+		return
+	}
 	process(&kio.ByteReadWriter{}, &GopassSecret{
 		rungopassFunc: rungopass,
 	})
