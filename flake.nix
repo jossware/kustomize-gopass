@@ -17,10 +17,12 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
+        version = self.shortRev or "dirty";
 
         app = pkgs.buildGo123Module {
           name = "kustomize-gopass";
           pname = "kustomize-gopass";
+          version = version;
 
           src = ./.;
 
@@ -34,6 +36,13 @@
           # remember to bump this hash when your dependencies change.
           # vendorHash = pkgs.lib.fakeHash;
           vendorHash = "sha256-Vv42dLN0iKJUEL1o0ZxCHq741xufXHiakw97eVbkcxo=";
+
+          ldflags = [
+            "-s"
+            "-w"
+            "-X main.Version=${version}"
+          ];
+          doCheck = true;
         };
 
       in
