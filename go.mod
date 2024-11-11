@@ -1,4 +1,4 @@
-module jossware.com/kustomize-gopass
+module github.com/jossware/kustomize-gopass
 
 go 1.23
 
