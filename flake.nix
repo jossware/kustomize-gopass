@@ -49,6 +49,7 @@
             gotools
             go-tools
             kustomize
+            goreleaser
           ];
         };
         overlays = final: prev: { kustomize-gopass = app; };
