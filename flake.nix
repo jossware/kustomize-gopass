@@ -19,7 +19,7 @@
         pkgs = import nixpkgs { inherit system; };
         version = self.shortRev or "dirty";
 
-        app = pkgs.buildGo123Module {
+        app = pkgs.buildGoModule {
           name = "kustomize-gopass";
           pname = "kustomize-gopass";
           version = version;
@@ -35,7 +35,7 @@
           # To begin with it is recommended to set this, but one must
           # remember to bump this hash when your dependencies change.
           # vendorHash = pkgs.lib.fakeHash;
-          vendorHash = "sha256-Vv42dLN0iKJUEL1o0ZxCHq741xufXHiakw97eVbkcxo=";
+          vendorHash = "sha256-TLapxv6ZxwQNTVuKGR7j5K/HpAuIiz5PhYCS7K2IcJ8=";
 
           ldflags = [
             "-s"
@@ -53,7 +53,7 @@
         };
         devShells.default = mkShell {
           nativeBuildInputs = [
-            go_1_23
+            go
             gopls
             gotools
             go-tools
