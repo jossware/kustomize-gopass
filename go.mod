@@ -3,7 +3,7 @@ module github.com/jossware/kustomize-gopass
 go 1.25
 
 require (
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	sigs.k8s.io/kustomize/kyaml v0.19.0
 )
 
