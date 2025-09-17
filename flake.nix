@@ -19,7 +19,7 @@
         pkgs = import nixpkgs { inherit system; };
         version = self.shortRev or "dirty";
 
-        app = pkgs.buildGo123Module {
+        app = pkgs.buildGoModule {
           name = "kustomize-gopass";
           pname = "kustomize-gopass";
           version = version;
@@ -53,7 +53,7 @@
         };
         devShells.default = mkShell {
           nativeBuildInputs = [
-            go_1_23
+            go
             gopls
             gotools
             go-tools
