@@ -35,7 +35,7 @@
           # To begin with it is recommended to set this, but one must
           # remember to bump this hash when your dependencies change.
           # vendorHash = pkgs.lib.fakeHash;
-          vendorHash = "sha256-Vv42dLN0iKJUEL1o0ZxCHq741xufXHiakw97eVbkcxo=";
+          vendorHash = "sha256-TLapxv6ZxwQNTVuKGR7j5K/HpAuIiz5PhYCS7K2IcJ8=";
 
           ldflags = [
             "-s"
